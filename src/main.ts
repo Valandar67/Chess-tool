@@ -19,6 +19,7 @@ interface PgnMentorSettings {
 	section: string;
 	singleFile: boolean;
 	maxGames: number;
+	useHttp: boolean;
 }
 
 const DEFAULT_SETTINGS: PgnMentorSettings = {
@@ -26,6 +27,7 @@ const DEFAULT_SETTINGS: PgnMentorSettings = {
 	section: "openings",
 	singleFile: true,
 	maxGames: 0,
+	useHttp: false,
 };
 
 // ---------------------------------------------------------------------------
@@ -78,7 +80,7 @@ export default class PgnMentorPlugin extends Plugin {
 
 	/** Core download + save logic. */
 	async downloadAndSave(nameOrUrl: string): Promise<void> {
-		const { url, displayName } = resolvePgnUrl(nameOrUrl, this.settings.section);
+		const { url, displayName } = resolvePgnUrl(nameOrUrl, this.settings.section, this.settings.useHttp);
 
 		new Notice(`Downloading ${displayName}...`);
 
@@ -344,6 +346,19 @@ class PgnMentorSettingTab extends PluginSettingTab {
 			.addToggle((toggle) =>
 				toggle.setValue(this.plugin.settings.singleFile).onChange(async (value) => {
 					this.plugin.settings.singleFile = value;
+					await this.plugin.saveSettings();
+				})
+			);
+
+		new Setting(containerEl)
+			.setName("Use HTTP instead of HTTPS")
+			.setDesc(
+				"Enable this if downloads fail with SSL/certificate errors (common on mobile). " +
+				"The plugin also tries HTTP automatically as a fallback."
+			)
+			.addToggle((toggle) =>
+				toggle.setValue(this.plugin.settings.useHttp).onChange(async (value) => {
+					this.plugin.settings.useHttp = value;
 					await this.plugin.saveSettings();
 				})
 			);
