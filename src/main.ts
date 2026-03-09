@@ -8,7 +8,7 @@ import {
 	SuggestModal,
 } from "obsidian";
 import { parsePgnText, gameToMarkdown, gamesToSingleMarkdown, ChessGame } from "./pgn-parser";
-import { resolvePgnUrl, downloadPgn, listAvailable } from "./scraper";
+import { downloadPgnByName, listAvailable } from "./scraper";
 
 // ---------------------------------------------------------------------------
 // Settings
@@ -80,15 +80,20 @@ export default class PgnMentorPlugin extends Plugin {
 
 	/** Core download + save logic. */
 	async downloadAndSave(nameOrUrl: string): Promise<void> {
-		const { url, displayName } = resolvePgnUrl(nameOrUrl, this.settings.section, this.settings.useHttp);
-
-		new Notice(`Downloading ${displayName}...`);
+		new Notice(`Downloading ${nameOrUrl}...`);
 
 		let pgnText: string;
+		let displayName: string;
 		try {
-			pgnText = await downloadPgn(url);
+			const result = await downloadPgnByName(
+				nameOrUrl,
+				this.settings.section,
+				this.settings.useHttp
+			);
+			pgnText = result.pgnText;
+			displayName = result.displayName;
 		} catch (e) {
-			new Notice(`Download failed: ${e}`);
+			new Notice(`Download failed: ${e}`, 15000);
 			return;
 		}
 
