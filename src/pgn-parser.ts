@@ -6,56 +6,69 @@ export interface ChessGame {
 
 /**
  * Parse raw PGN text into individual games.
- * Handles the standard PGN format: header tags followed by move text.
+ * Tolerant parser that handles:
+ * - \r\n and \r line endings
+ * - Missing blank line between headers and moves
+ * - Multiple blank lines between games
+ * - BOM characters
  */
 export function parsePgnText(pgnText: string): ChessGame[] {
 	const games: ChessGame[] = [];
+
+	// Normalize line endings and strip BOM
+	const text = pgnText.replace(/\ufeff/g, "").replace(/\r\n/g, "\n").replace(/\r/g, "\n");
+
 	let currentHeaders: Record<string, string> = {};
 	let moveLines: string[] = [];
 	let inMoves = false;
 
-	const headerRegex = /^\[(\w+)\s+"(.*)"\]$/;
+	const headerRegex = /^\[(\w+)\s+"(.*)"\]\s*$/;
 
-	for (const rawLine of pgnText.split("\n")) {
+	function saveCurrentGame() {
+		if (Object.keys(currentHeaders).length > 0) {
+			games.push({
+				headers: currentHeaders,
+				moves: moveLines.join(" ").trim(),
+			});
+		}
+		currentHeaders = {};
+		moveLines = [];
+		inMoves = false;
+	}
+
+	for (const rawLine of text.split("\n")) {
 		const line = rawLine.trim();
 
+		// Try to match a header tag
 		const headerMatch = line.match(headerRegex);
 		if (headerMatch) {
-			// If we were collecting moves, save the previous game
-			if (inMoves && moveLines.length > 0) {
-				games.push({
-					headers: currentHeaders,
-					moves: moveLines.join(" ").trim(),
-				});
-				currentHeaders = {};
-				moveLines = [];
-				inMoves = false;
+			// If we were in the moves section, a new header means a new game
+			if (inMoves) {
+				saveCurrentGame();
 			}
 			currentHeaders[headerMatch[1]] = headerMatch[2];
 			continue;
 		}
 
+		// Empty line
 		if (line === "") {
 			if (Object.keys(currentHeaders).length > 0 && !inMoves) {
 				inMoves = true;
 			}
+			// If we have moves and hit a blank line, could be end of game
+			// but we don't save yet — wait for next header or EOF
 			continue;
 		}
 
-		// Move text
+		// Non-header, non-empty line → must be move text
 		if (Object.keys(currentHeaders).length > 0) {
 			inMoves = true;
 			moveLines.push(line);
 		}
 	}
 
-	// Last game
-	if (Object.keys(currentHeaders).length > 0) {
-		games.push({
-			headers: currentHeaders,
-			moves: moveLines.join(" ").trim(),
-		});
-	}
+	// Save last game
+	saveCurrentGame();
 
 	return games;
 }

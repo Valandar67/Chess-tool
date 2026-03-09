@@ -94,7 +94,25 @@ export default class PgnMentorPlugin extends Plugin {
 
 		let games = parsePgnText(pgnText);
 		if (games.length === 0) {
-			new Notice(`No games found in ${displayName}`);
+			// Show what we actually got to help debug
+			const preview = pgnText.trim().substring(0, 300);
+			new Notice(
+				`No games found in ${displayName}. ` +
+				`Response starts with: ${preview}`,
+				15000
+			);
+
+			// Save raw response as a debug file so user can inspect it
+			const debugFolder = this.settings.outputFolder || "Chess";
+			await this.ensureFolder(debugFolder);
+			const debugPath = `${debugFolder}/_debug_${displayName}.txt`;
+			const existing = this.app.vault.getAbstractFileByPath(debugPath);
+			if (existing) {
+				await this.app.vault.modify(existing as any, pgnText);
+			} else {
+				await this.app.vault.create(debugPath, pgnText);
+			}
+			new Notice(`Raw response saved to ${debugPath} for inspection.`, 10000);
 			return;
 		}
 
