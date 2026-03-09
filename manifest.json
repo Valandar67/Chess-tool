@@ -1,0 +1,9 @@
+{
+	"id": "pgn-mentor-scraper",
+	"name": "PGN Mentor Scraper",
+	"version": "1.0.0",
+	"minAppVersion": "0.15.0",
+	"description": "Download chess games from pgnmentor.com and save them as Markdown notes in your vault.",
+	"author": "Chess-tool",
+	"isDesktopOnly": false
+}

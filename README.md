@@ -1,95 +1,55 @@
-# PGN Mentor Scraper
+# PGN Mentor Scraper — Obsidian Plugin
 
-Download chess games from [pgnmentor.com](https://www.pgnmentor.com) and convert them to **Markdown** — ready to drop into your Obsidian vault.
+Download chess games from [pgnmentor.com](https://www.pgnmentor.com) straight into your Obsidian vault. Works on **mobile** and desktop.
 
-## Setup
+## Install (Manual)
+
+1. Download the latest release (`main.js`, `manifest.json`, `styles.css`)
+2. In your vault, create the folder `.obsidian/plugins/pgn-mentor-scraper/`
+3. Copy the 3 files into that folder
+4. In Obsidian → Settings → Community Plugins → enable **PGN Mentor Scraper**
+
+## How to Use
+
+### Download by name
+1. Open the command palette (swipe down on mobile, `Ctrl/Cmd+P` on desktop)
+2. Search for **"Download PGN from PGN Mentor"**
+3. Type an opening name like `Colle`, `SicilianNajdorf`, or `KingsIndian`
+4. Pick the section (Openings / Players / Events)
+5. Hit **Download**
+
+Your games appear as Markdown notes in the output folder (default: `Chess/`).
+
+### Browse available files
+1. Open command palette
+2. Search for **"Browse available PGN files on PGN Mentor"**
+3. A searchable list appears — pick any opening/player/event
+4. Games are downloaded and saved automatically
+
+### Full URLs work too
+Paste a direct URL like `https://www.pgnmentor.com/openings/Colle.pgn` into the name field.
+
+## Settings
+
+| Setting | Description | Default |
+|---------|-------------|---------|
+| **Output folder** | Where games are saved in your vault | `Chess` |
+| **Default section** | Openings, Players, or Events | Openings |
+| **Single file mode** | All games in one note (ON) or one note per game (OFF) | ON |
+| **Max games** | Limit number of games (0 = all) | 0 |
+
+## What You Get
+
+Each game includes:
+- Player names, ELO ratings, date, event, ECO code in a table
+- Moves in a `pgn` code block
+- Collapsible raw PGN for import into chess apps
+
+## Building from Source
 
 ```bash
-pip install -r requirements.txt
+npm install
+npm run build
 ```
 
-## Quick Start
-
-```bash
-# Download all Colle System games as Markdown
-python pgn_mentor_scraper.py Colle
-
-# Output lands in ./output/Colle/ with one .md file per game + an index file
-```
-
-## Usage
-
-```
-python pgn_mentor_scraper.py [OPTIONS] <name(s) or URL(s)>
-```
-
-### Examples
-
-```bash
-# Single opening
-python pgn_mentor_scraper.py Colle
-
-# Multiple openings at once
-python pgn_mentor_scraper.py Colle "SicilianGrandPrix" "KingsIndian"
-
-# Full URL works too
-python pgn_mentor_scraper.py https://www.pgnmentor.com/openings/Colle.pgn
-
-# Download a player's games
-python pgn_mentor_scraper.py --type players Kasparov
-
-# Download event games
-python pgn_mentor_scraper.py --type events Linares1993
-
-# Everything in one big Markdown file (instead of one per game)
-python pgn_mentor_scraper.py --single-file Colle
-
-# Also keep the raw .pgn file
-python pgn_mentor_scraper.py --keep-pgn Colle
-
-# Limit to first 50 games
-python pgn_mentor_scraper.py --max-games 50 Colle
-
-# Custom output directory (e.g. straight into your vault)
-python pgn_mentor_scraper.py -o ~/Obsidian/Chess Colle
-
-# List all available openings
-python pgn_mentor_scraper.py --list openings
-```
-
-### Options
-
-| Flag | Description |
-|------|-------------|
-| `--type`, `-t` | Section: `openings` (default), `players`, or `events` |
-| `--list`, `-l` | List all available files for a section |
-| `--output`, `-o` | Output directory (default: `./output`) |
-| `--single-file` | All games in one Markdown file |
-| `--keep-pgn` | Also save the raw `.pgn` file |
-| `--max-games` | Limit number of games (0 = all) |
-
-## Output Format
-
-Each game becomes a Markdown file with:
-
-- A heading with the player names
-- A table with game metadata (players, ELO, date, event, ECO code, etc.)
-- The moves in a `pgn` code block
-- A collapsible raw PGN section for easy import into chess apps
-
-An index file (`_<Opening>_index.md`) is also generated listing all games.
-
-### Obsidian Tips
-
-- Point `-o` directly at a folder in your vault
-- Use `--single-file` if you prefer one note per opening
-- The `pgn` code blocks work with Obsidian chess plugins
-- Works great on mobile — just sync the output folder
-
-## How It Works
-
-1. Resolves the opening/player/event name to a PGN file URL on pgnmentor.com
-2. Downloads the `.pgn` file
-3. Parses individual games (headers + moves)
-4. Converts each game to clean Markdown
-5. Writes to your output directory
+Then copy `main.js`, `manifest.json`, and `styles.css` to your vault's plugin folder.
